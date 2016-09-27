@@ -28,6 +28,7 @@ import javax.ws.rs.core.StreamingOutput;
 import java.io.IOException;
 import java.nio.file.Files;
 
+import static java.nio.file.Files.copy;
 import static java.nio.file.Files.readAllBytes;
 
 /**
@@ -51,7 +52,7 @@ public class AuditService extends Service {
         java.nio.file.Path report = auditManager.generateAuditReport();
 
         StreamingOutput stream = outputStream -> {
-            outputStream.write(readAllBytes(report));
+            copy(report, outputStream);
             auditManager.deleteReportDirectory(report);
         };
 
