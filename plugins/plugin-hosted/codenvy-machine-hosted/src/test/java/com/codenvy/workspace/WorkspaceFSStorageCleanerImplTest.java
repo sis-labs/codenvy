@@ -62,6 +62,6 @@ public class WorkspaceFSStorageCleanerImplTest {
 
         workspaceFSStorageCleaner.clear(TEXT);
 
-        verify(workspaceFSStorageCleaner, timeout(2000)).execute(new String[]{TEXT, TEXT}, CLEAN_UP_DURATION);
+        verify(workspaceFSStorageCleaner, timeout(2000)).execute(new String[] {TEXT, TEXT}, CLEAN_UP_DURATION);
     }
 }

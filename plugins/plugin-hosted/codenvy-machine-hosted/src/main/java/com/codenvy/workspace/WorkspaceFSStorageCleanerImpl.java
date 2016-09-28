@@ -39,7 +39,7 @@ import java.util.concurrent.TimeoutException;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
- * Component to clean up workspace project storage which can be located in the remote node.
+ * Component to clean up workspace project storage.
  *
  * @author Alexander Andrienko
  */
@@ -72,18 +72,22 @@ public class WorkspaceFSStorageCleanerImpl implements WorkspaceFSStorageCleaner 
     public void clear(String workspaceId) {
         File workspaceFolder = workspaceIdHashLocationFinder.calculateDirPath(backupsRootDir, workspaceId);
 
-        CommandLine commandLine = new CommandLine(workspaceCleanUpScript, workspaceFolder.getAbsolutePath());
+        String workspaceFolderPath = workspaceFolder.getAbsolutePath();
+        CommandLine commandLine = new CommandLine(workspaceCleanUpScript, workspaceFolderPath);
 
         executor.execute(ThreadLocalPropagateContext.wrap(() -> {
             try {
                 execute(commandLine.asArray(), cleanUpTimeOut);
             } catch (TimeoutException e) {
                 LOG.error("Failed to delete folder '{}' for workspace with id: '{}' by timeOut: '{}' sec.",
-                          workspaceFolder,
+                          workspaceFolderPath,
                           workspaceId,
                           cleanUpTimeOut);
             } catch (IOException | InterruptedException e) {
-                LOG.error("Failed to delete folder '{}' for workspace with id: '{}'. Cause: '{}'", workspaceFolder, workspaceId, e.getMessage());
+                LOG.error("Failed to delete folder '{}' for workspace with id: '{}'. Cause: '{}'",
+                          workspaceFolderPath,
+                          workspaceId,
+                          e.getMessage());
             }
         }));
     }
