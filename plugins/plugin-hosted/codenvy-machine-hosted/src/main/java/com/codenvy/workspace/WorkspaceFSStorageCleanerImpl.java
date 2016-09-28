@@ -70,17 +70,20 @@ public class WorkspaceFSStorageCleanerImpl implements WorkspaceFSStorageCleaner 
 
     @Override
     public void clear(String workspaceId) {
-        File backupWorkspaceFolder = workspaceIdHashLocationFinder.calculateDirPath(backupsRootDir, workspaceId);
+        File workspaceFolder = workspaceIdHashLocationFinder.calculateDirPath(backupsRootDir, workspaceId);
 
-        CommandLine commandLine = new CommandLine(workspaceCleanUpScript, backupWorkspaceFolder.getAbsolutePath());
+        CommandLine commandLine = new CommandLine(workspaceCleanUpScript, workspaceFolder.getAbsolutePath());
 
         executor.execute(ThreadLocalPropagateContext.wrap(() -> {
             try {
                 execute(commandLine.asArray(), cleanUpTimeOut);
             } catch (TimeoutException e) {
-                LOG.error("Failed to delete folder for workspace with id: {} by timeOut: {} sec.", workspaceId, cleanUpTimeOut);
+                LOG.error("Failed to delete folder '{}' for workspace with id: '{}' by timeOut: '{}' sec.",
+                          workspaceFolder,
+                          workspaceId,
+                          cleanUpTimeOut);
             } catch (IOException | InterruptedException e) {
-                LOG.error("Failed to delete folder for workspace with id: {}. Cause: {}", workspaceId, e.getMessage());
+                LOG.error("Failed to delete folder '{}' for workspace with id: '{}'. Cause: '{}'", workspaceFolder, workspaceId, e.getMessage());
             }
         }));
     }
