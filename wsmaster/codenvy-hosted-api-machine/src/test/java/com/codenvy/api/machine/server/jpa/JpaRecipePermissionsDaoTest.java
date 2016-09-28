@@ -211,7 +211,7 @@ public class JpaRecipePermissionsDaoTest {
             bind(new TypeLiteral<TckRepository<UserImpl>>() {}).toInstance(new JpaTckRepository<>(UserImpl.class));
             bind(new TypeLiteral<TckRepository<RecipeImpl>>() {}).toInstance(new JpaTckRepository<>(RecipeImpl.class));
 
-            Map properties = new HashMap();
+            Map<String, String> properties = new HashMap<>();
             if (System.getProperty("jdbc.driver") != null) {
                 properties.put(TRANSACTION_TYPE,
                                PersistenceUnitTransactionType.RESOURCE_LOCAL.name());
