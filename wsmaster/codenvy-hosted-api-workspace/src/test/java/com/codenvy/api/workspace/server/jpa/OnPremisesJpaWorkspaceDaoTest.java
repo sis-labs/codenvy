@@ -16,11 +16,15 @@ package com.codenvy.api.workspace.server.jpa;
 
 import com.codenvy.api.machine.server.jpa.OnPremisesJpaMachineModule;
 import com.codenvy.api.machine.server.recipe.RecipePermissionsImpl;
+import com.codenvy.api.permission.server.AbstractPermissionsDomain;
 import com.codenvy.api.permission.server.PermissionsModule;
 import com.codenvy.api.permission.server.jpa.SystemPermissionsJpaModule;
 import com.codenvy.api.workspace.server.model.impl.WorkerImpl;
+import com.codenvy.api.workspace.server.spi.WorkerDao;
+import com.codenvy.api.workspace.server.spi.jpa.JpaWorkerDao;
 import com.codenvy.api.workspace.server.spi.jpa.OnPremisesJpaStackDao;
 import com.codenvy.api.workspace.server.spi.jpa.OnPremisesJpaWorkspaceDao;
+import com.codenvy.api.workspace.server.spi.tck.WorkerDaoTest;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -29,6 +33,8 @@ import com.google.inject.persist.jpa.JpaPersistModule;
 
 import org.eclipse.che.api.core.jdbc.jpa.eclipselink.EntityListenerInjectionManagerInitializer;
 import org.eclipse.che.api.core.jdbc.jpa.guice.JpaInitializer;
+import org.eclipse.che.api.user.server.jpa.JpaUserDao;
+import org.eclipse.che.api.user.server.jpa.UserJpaModule;
 import org.eclipse.che.api.user.server.model.impl.UserImpl;
 import org.eclipse.che.api.workspace.server.jpa.JpaStackDao;
 import org.eclipse.che.api.workspace.server.model.impl.WorkspaceConfigImpl;
@@ -63,51 +69,48 @@ import static org.testng.Assert.assertTrue;
 public class OnPremisesJpaWorkspaceDaoTest {
     private EntityManager manager;
 
-    private OnPremisesJpaWorkspaceDao dao;
+    private OnPremisesJpaWorkspaceDao workspaceDao;
+    private JpaUserDao                userDao;
+    private JpaWorkerDao              workerDao;
 
-    WorkerImpl[] workers;
-
-    UserImpl[] users;
-
-    WorkspaceImpl[] workspaces;
+    private WorkerImpl[]    workers;
+    private UserImpl[]      users;
+    private WorkspaceImpl[] workspaces;
 
     @BeforeClass
     public void setupEntities() throws Exception {
-        workers = new WorkerImpl[]{new WorkerImpl("ws1", "user1", Arrays.asList("read", "use", "search")),
-                                             new WorkerImpl("ws2", "user1", Arrays.asList("read", "search")),
-                                             new WorkerImpl("ws3", "user1", Arrays.asList("none", "run")),
-                                             new WorkerImpl("ws1", "user2", Arrays.asList("read", "use"))};
+        workers = new WorkerImpl[] {new WorkerImpl("ws1", "user1", Arrays.asList("read", "use", "search")),
+                                    new WorkerImpl("ws2", "user1", Arrays.asList("read", "search")),
+                                    new WorkerImpl("ws3", "user1", Arrays.asList("none", "run")),
+                                    new WorkerImpl("ws1", "user2", Arrays.asList("read", "use"))};
 
-        users = new UserImpl[]{new UserImpl("user1", "user1@com.com", "usr1"),
-                               new UserImpl("user2", "user2@com.com", "usr2")};
+        users = new UserImpl[] {new UserImpl("user1", "user1@com.com", "usr1"),
+                                new UserImpl("user2", "user2@com.com", "usr2")};
 
         workspaces = new WorkspaceImpl[] {
                 new WorkspaceImpl("ws1", users[0].getAccount(), new WorkspaceConfigImpl("wrksp1", "", "cfg1", null, null, null)),
                 new WorkspaceImpl("ws2", users[0].getAccount(), new WorkspaceConfigImpl("wrksp2", "", "cfg2", null, null, null)),
-                new WorkspaceImpl("ws3", users[0].getAccount(), new WorkspaceConfigImpl("wrksp3", "", "cfg3", null, null, null))};
-        Injector injector =
-                Guice.createInjector(new TestModule(), new OnPremisesJpaMachineModule(), new PermissionsModule(),
-                                     new SystemPermissionsJpaModule());
+                new WorkspaceImpl("ws3", users[0].getAccount(), new WorkspaceConfigImpl("wrksp3", "", "cfg3", null, null, null))
+        };
+        Injector injector = Guice.createInjector(new OnpremisesWorkspaceDaoTestModule());
         manager = injector.getInstance(EntityManager.class);
-        dao = injector.getInstance(OnPremisesJpaWorkspaceDao.class);
+        userDao = injector.getInstance(JpaUserDao.class);
+        workerDao = injector.getInstance(JpaWorkerDao.class);
+        workspaceDao = injector.getInstance(OnPremisesJpaWorkspaceDao.class);
+
     }
 
     @BeforeMethod
     public void setUp() throws Exception {
-        manager.getTransaction().begin();
         for (UserImpl user : users) {
-            manager.persist(user);
+            userDao.create(user);
         }
-
         for (WorkspaceImpl ws : workspaces) {
-            manager.persist(ws);
+            workspaceDao.create(ws);
         }
-
         for (WorkerImpl worker : workers) {
-            manager.persist(worker);
+            workerDao.store(worker);
         }
-        manager.getTransaction().commit();
-        manager.clear();
     }
 
     @AfterMethod
@@ -136,7 +139,7 @@ public class OnPremisesJpaWorkspaceDaoTest {
 
     @Test
     public void shouldFindStackByPermissions() throws Exception {
-        List<WorkspaceImpl> results = dao.getWorkspaces(users[0].getId());
+        List<WorkspaceImpl> results = workspaceDao.getWorkspaces(users[0].getId());
         assertEquals(results.size(), 2);
         assertTrue(results.contains(workspaces[0]));
         assertTrue(results.contains(workspaces[1]));
@@ -169,6 +172,21 @@ public class OnPremisesJpaWorkspaceDaoTest {
             install(main);
             bind(JpaInitializer.class).asEagerSingleton();
             bind(EntityListenerInjectionManagerInitializer.class).asEagerSingleton();
+        }
+    }
+
+    private class OnpremisesWorkspaceDaoTestModule extends AbstractModule {
+
+        @Override
+        protected void configure() {
+            install(new UserJpaModule());
+            install(new TestModule());
+            install(new OnPremisesJpaMachineModule());
+            install(new PermissionsModule());
+            install(new SystemPermissionsJpaModule());
+            bind(new TypeLiteral<AbstractPermissionsDomain<WorkerImpl>>() {})
+                    .to(WorkerDaoTest.TestDomain.class);
+            bind(WorkerDao.class).to(JpaWorkerDao.class);
         }
     }
 }
