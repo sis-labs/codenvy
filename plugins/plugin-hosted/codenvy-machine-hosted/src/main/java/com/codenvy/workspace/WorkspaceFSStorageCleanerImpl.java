@@ -52,20 +52,17 @@ public class WorkspaceFSStorageCleanerImpl implements WorkspaceFSStorageCleaner 
     private final File                          backupsRootDir;
     private final int                           cleanUpTimeOut;
     private final String                        workspaceCleanUpScript;
-    private final String                        cleauUpRegex;
     private final ExecutorService               executor;
 
     @Inject
     public WorkspaceFSStorageCleanerImpl(WorkspaceIdHashLocationFinder workspaceIdHashLocationFinder,
                                          @Named("che.user.workspaces.storage") File backupsRootDir,
                                          @Named("workspace.projects_storage.cleanup.script") String workspaceCleanUpScript,
-                                         @Named("workspace.cleanup.cleanup_duration_second") int cleanUpTimeOut,
-                                         @Named("wokspace.cleanup.cleanup_regex") String cleauUpRegex) {
+                                         @Named("workspace.cleanup.cleanup_duration_second") int cleanUpTimeOut) {
         this.workspaceIdHashLocationFinder = workspaceIdHashLocationFinder;
         this.backupsRootDir = backupsRootDir;
         this.workspaceCleanUpScript = workspaceCleanUpScript;
         this.cleanUpTimeOut = cleanUpTimeOut;
-        this.cleauUpRegex = cleauUpRegex;
         executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("WorkspaceFSStorageCleanerImpl-%d")
                                                                            .setDaemon(true)
                                                                            .build());
@@ -75,12 +72,14 @@ public class WorkspaceFSStorageCleanerImpl implements WorkspaceFSStorageCleaner 
     public void clear(String workspaceId) {
         File backupWorkspaceFolder = workspaceIdHashLocationFinder.calculateDirPath(backupsRootDir, workspaceId);
 
-        CommandLine commandLine = new CommandLine(workspaceCleanUpScript, backupWorkspaceFolder.getAbsolutePath(), cleauUpRegex);
+        CommandLine commandLine = new CommandLine(workspaceCleanUpScript, backupWorkspaceFolder.getAbsolutePath());
 
         executor.execute(ThreadLocalPropagateContext.wrap(() -> {
             try {
                 execute(commandLine.asArray(), cleanUpTimeOut);
-            } catch (TimeoutException | IOException | InterruptedException e) {
+            } catch (TimeoutException e) {
+                LOG.error("Failed to delete folder for workspace with id: {} by timeOut: {} sec.", workspaceId, cleanUpTimeOut);
+            } catch (IOException | InterruptedException e) {
                 LOG.error("Failed to delete folder for workspace with id: {}. Cause: {}", workspaceId, e.getMessage());
             }
         }));
