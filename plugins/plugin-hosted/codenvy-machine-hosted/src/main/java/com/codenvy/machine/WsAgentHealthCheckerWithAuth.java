@@ -20,6 +20,7 @@ import org.eclipse.che.api.agent.server.WsAgentHealthCheckerImpl;
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.machine.Machine;
+import org.eclipse.che.api.core.model.machine.Server;
 import org.eclipse.che.api.core.rest.HttpJsonRequest;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 
@@ -54,8 +55,8 @@ public class WsAgentHealthCheckerWithAuth extends WsAgentHealthCheckerImpl {
 
 
     // modifies the ping request if it is possible to get the machine token.
-    protected HttpJsonRequest createPingRequest(Machine devMachine) throws ServerException {
-        final HttpJsonRequest pingRequest = super.createPingRequest(devMachine);
+    protected HttpJsonRequest createPingRequest(Machine devMachine, Server wsAgent) throws ServerException {
+        final HttpJsonRequest pingRequest = super.createPingRequest(devMachine, wsAgent);
         final String tokenServiceUrl = UriBuilder.fromUri(apiEndpoint)
                                                  .replacePath("api/machine/token/" + devMachine.getWorkspaceId())
                                                  .build()
