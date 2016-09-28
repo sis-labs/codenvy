@@ -32,6 +32,7 @@ import org.eclipse.che.api.environment.server.EnvironmentParser;
 import org.eclipse.che.api.environment.server.model.CheServicesEnvironmentImpl;
 import org.eclipse.che.api.machine.server.spi.SnapshotDao;
 import org.eclipse.che.api.workspace.server.WorkspaceManager;
+import org.eclipse.che.api.workspace.server.WorkspaceFSStorageCleaner;
 import org.eclipse.che.api.workspace.server.WorkspaceRuntimes;
 import org.eclipse.che.api.workspace.server.model.impl.WorkspaceImpl;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
@@ -93,8 +94,9 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
                                           EnvironmentParser environmentParser,
                                           @Named("workspace.runtime.auto_snapshot") boolean defaultAutoSnapshot,
                                           @Named("workspace.runtime.auto_restore") boolean defaultAutoRestore,
-                                          @Named("machine.default_mem_size_mb") int defaultMachineMemorySizeMB) {
-        super(workspaceDao, runtimes, eventService, accountManager, defaultAutoSnapshot, defaultAutoRestore, snapshotDao);
+                                          @Named("machine.default_mem_size_mb") int defaultMachineMemorySizeMB,
+                                          WorkspaceFSStorageCleaner workspaceCleaner) {
+        super(workspaceDao, runtimes, eventService, accountManager, defaultAutoSnapshot, defaultAutoRestore, snapshotDao, workspaceCleaner);
         this.accountManager = accountManager;
         this.systemRamInfoProvider = systemRamInfoProvider;
         this.workspacesPerUser = workspacesPerUser;

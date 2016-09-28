@@ -399,5 +399,7 @@ public class OnPremisesIdeApiModule extends AbstractModule {
 
         // install report sender
         install(new ReportModule());
+
+        bind(org.eclipse.che.api.workspace.server.WorkspaceFSStorageCleaner.class).to(com.codenvy.workspace.WorkspaceFSStorageCleanerImpl.class);
     }
 }

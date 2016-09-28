@@ -37,7 +37,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import javax.persistence.EntityManager;
-import javax.validation.constraints.AssertTrue;
 import javax.persistence.spi.PersistenceUnitTransactionType;
 import java.util.Arrays;
 import java.util.HashMap;
