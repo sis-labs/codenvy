@@ -66,6 +66,7 @@
         <org.apache.karaf.version>3.0.2</org.apache.karaf.version>
         <org.apache.sshd.version>0.9.0</org.apache.sshd.version>
         <org.flyway.version>3.1</org.flyway.version>
+        <org.ldaptive.version>1.2.0</org.ldaptive.version>
         <org.mongodb.version>3.2.1</org.mongodb.version>
         <org.osgi.version>5.0.0</org.osgi.version>
         <org.scala.lang.version>2.10.4</org.scala.lang.version>
@@ -103,13 +104,6 @@
                 <groupId>com.codahale.metrics</groupId>
                 <artifactId>metrics-servlets</artifactId>
                 <version>${com.codahale.metrics.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy</groupId>
-                <artifactId>site</artifactId>
-                <version>${project.version}</version>
-                <type>zip</type>
-                <classifier>${site.classifier}</classifier>
             </dependency>
             <dependency>
                 <groupId>com.codenvy.cli</groupId>
@@ -320,6 +314,13 @@
                 <type>zip</type>
             </dependency>
             <dependency>
+                <groupId>com.codenvy.onpremises</groupId>
+                <artifactId>site</artifactId>
+                <version>${project.version}</version>
+                <type>zip</type>
+                <classifier>${site.classifier}</classifier>
+            </dependency>
+            <dependency>
                 <groupId>com.codenvy.onpremises.wsagent</groupId>
                 <artifactId>codenvy-hosted-machine-authentication-agent</artifactId>
                 <version>${project.version}</version>
@@ -516,6 +517,11 @@
             <dependency>
                 <groupId>com.codenvy.onpremises.wsmaster</groupId>
                 <artifactId>codenvy-hosted-workspace-activity</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-ldap</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -857,6 +863,11 @@
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-core</artifactId>
                 <version>${org.flyway.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ldaptive</groupId>
+                <artifactId>ldaptive</artifactId>
+                <version>${org.ldaptive.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.mongodb</groupId>

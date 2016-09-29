@@ -23,7 +23,7 @@
         <version>5.0.0-M5-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>com.codenvy</groupId>
+    <groupId>com.codenvy.onpremises</groupId>
     <artifactId>site</artifactId>
     <version>5.0.0-M5-SNAPSHOT</version>
     <packaging>pom</packaging>
